@@ -42,8 +42,8 @@ impl Base {
   /// Creates a new base from the given string slice.
   /// 
   /// The value of each character is its index in the slice,
-  /// e.g. the first character has value 1, the second
-  /// value 2, etc.
+  /// e.g. the first character has value 0, the second
+  /// value 1, etc.
   /// 
   /// The behavior of the function is undefined when
   /// a character is present more than once in the given
