@@ -26,7 +26,7 @@ impl std::error::Error for UnknownChar {
   }
 }
 
-/// The Base of a numeral system.
+/// The base of a numeral system.
 pub struct Base {
   base: Vec<char>,
   vals: std::collections::HashMap<char, usize>,
