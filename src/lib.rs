@@ -146,23 +146,29 @@ impl NumeralSystem<usize> for Base {
   }
 }
 
+macro_rules! from_str {
+  ($type:ty) => {
+    fn from_str(&self, rep: &str) -> Result<$type, StrError> {
+      let mut val = 0;
+      let radix = self.base.len();
+      for c in rep.chars() {
+        match self.vals.get(&c) {
+          None => return Err(StrError::UnknownChar(c)),
+          Some(v) => {
+            val *= radix;
+            val += *v;
+          }
+        }
+      }
+      Ok(<$type>::try_from(val)?)
+    }
+  };
+}
+
 macro_rules! small_uint {
   ($type:ty) => {
     impl NumeralSystem<$type> for Base {
-      fn from_str(&self, rep: &str) -> Result<$type, StrError> {
-        let mut val = 0;
-        let radix = self.base.len();
-        for c in rep.chars() {
-          match self.vals.get(&c) {
-            None => return Err(StrError::UnknownChar(c)),
-            Some(v) => {
-              val *= radix;
-              val += *v;
-            }
-          }
-        }
-        Ok(<$type>::try_from(val)?)
-      }
+      from_str!{$type}
     
       fn digits(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
         let val: usize = usize::from(val);
@@ -189,20 +195,7 @@ small_uint!{u16}
 macro_rules! large_uint {
   ($type:ty) => {
     impl NumeralSystem<$type> for Base {
-      fn from_str(&self, rep: &str) -> Result<$type, StrError> {
-        let mut val = 0;
-        let radix = self.base.len();
-        for c in rep.chars() {
-          match self.vals.get(&c) {
-            None => return Err(StrError::UnknownChar(c)),
-            Some(v) => {
-              val *= radix;
-              val += *v;
-            }
-          }
-        }
-        Ok(<$type>::try_from(val)?)
-      }
+      from_str!{$type}
     
       fn digits(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
         if std::mem::size_of::<$type>() <= std::mem::size_of::<usize>() {
@@ -242,3 +235,22 @@ macro_rules! large_uint {
 large_uint!{u32}
 large_uint!{u64}
 large_uint!{u128}
+
+macro_rules! iint {
+  ($itype:ty, $utype:ty) => {
+    impl NumeralSystem<$itype> for Base {
+      from_str!{$itype}
+    
+      fn digits(&self, val: $itype) -> Result<String, std::num::TryFromIntError> {
+        self.digits(val as $utype)
+      }
+    }
+  };
+}
+
+iint!{i8, u8}
+iint!{i16, u16}
+iint!{i32, u32}
+iint!{isize, usize}
+iint!{i64, u64}
+iint!{i128, u128}
