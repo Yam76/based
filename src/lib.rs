@@ -7,7 +7,7 @@
 use std::ops::{AddAssign, MulAssign};
 
 #[derive(Debug)]
-/// Error type produced when [`Base::from_str`](Base::from_str) encounters an unknown character.
+/// The error type produced when [`Base::from_str`](Base::from_str) encounters an unknown character.
 /// Contains the unknown character.
 /// 
 /// # Examples
