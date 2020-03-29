@@ -49,8 +49,8 @@ impl Base {
   /// Creates a new numeral system from the given string slice.
   /// 
   /// The value of each character is its index in the slice,
-  /// e.g. the first character has value 0, the second
-  /// value 1, etc.
+  /// e.g. the first character has value `0`, the second
+  /// value `1`, etc.
   /// 
   /// The behavior of this function is undefined when
   /// a character is present more than once in the given
@@ -83,7 +83,7 @@ impl Base {
   /// Given a base and a number's representation
   /// in that base, return the number.
   ///
-  /// Returns `Err` if it encounters a character not in the `Base`.
+  /// Returns `Err` if this function encounters a character not in the `Base`.
   ///
   /// # Examples
   /// 
