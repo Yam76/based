@@ -116,7 +116,7 @@ pub trait NumeralSystem<T> {
   Returns `Err` if this function encounters a character not in the system,
   or if an int to int conversion fails.
   */
-  fn from_str(&self, rep: &str) -> Result<T, StrError>;
+  fn decode(&self, rep: &str) -> Result<T, StrError>;
 
   /** 
   Given a `NumeralSystem` and a number, return the 
@@ -127,11 +127,11 @@ pub trait NumeralSystem<T> {
   This will interpret signed integers as if their bits represented their
   unsigned counterparts.
   */
-  fn digits(&self, val: T) -> Result<String, TryFromIntError>;
+  fn encode(&self, val: T) -> Result<String, TryFromIntError>;
 }
 
 impl NumeralSystem<usize> for Base {
-  fn from_str(&self, rep: &str) -> Result<usize, StrError> {
+  fn decode(&self, rep: &str) -> Result<usize, StrError> {
     let mut val = 0;
     let radix = self.base.len();
     for c in rep.chars() {
@@ -147,7 +147,7 @@ impl NumeralSystem<usize> for Base {
   }
 
   /// Never produces `Err`.
-  fn digits(&self, val: usize) -> Result<String, TryFromIntError> {
+  fn encode(&self, val: usize) -> Result<String, TryFromIntError> {
     let mut stack = Vec::new();
     let radix = self.base.len();
     let mut rem = val % radix;
@@ -163,9 +163,9 @@ impl NumeralSystem<usize> for Base {
   }
 }
 
-macro_rules! from_str {
+macro_rules! decode {
   ($type:ty) => {
-    fn from_str(&self, rep: &str) -> Result<$type, StrError> {
+    fn decode(&self, rep: &str) -> Result<$type, StrError> {
       let mut val = 0;
       let radix = self.base.len();
       for c in rep.chars() {
@@ -185,10 +185,10 @@ macro_rules! from_str {
 macro_rules! small_uint {
   ($type:ty) => {
     impl NumeralSystem<$type> for Base {
-      from_str!{$type}
+      decode!{$type}
     
       /// Never produces `Err`.
-      fn digits(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
+      fn encode(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
         let val: usize = usize::from(val);
         let mut stack = Vec::new();
         let radix = self.base.len();
@@ -213,9 +213,9 @@ small_uint!{u16}
 macro_rules! large_uint {
   ($type:ty) => {
     impl NumeralSystem<$type> for Base {
-      from_str!{$type}
+      decode!{$type}
     
-      fn digits(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
+      fn encode(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
         if std::mem::size_of::<$type>() <= std::mem::size_of::<usize>() {
           let val: usize = usize::try_from(val)?;
           let mut stack = Vec::new();
@@ -257,10 +257,10 @@ large_uint!{u128}
 macro_rules! iint {
   ($itype:ty, $utype:ty) => {
     impl NumeralSystem<$itype> for Base {
-      from_str!{$itype}
+      decode!{$itype}
     
-      fn digits(&self, val: $itype) -> Result<String, std::num::TryFromIntError> {
-        self.digits(val as $utype)
+      fn encode(&self, val: $itype) -> Result<String, std::num::TryFromIntError> {
+        self.encode(val as $utype)
       }
     }
   };
