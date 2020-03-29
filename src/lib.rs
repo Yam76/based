@@ -45,7 +45,7 @@ impl Base {
   /// e.g. the first character has value 0, the second
   /// value 1, etc.
   /// 
-  /// The behavior of the function is undefined when
+  /// The behavior of this function is undefined when
   /// a character is present more than once in the given
   /// string slice.
   ///
