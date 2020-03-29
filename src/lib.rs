@@ -146,7 +146,7 @@ impl NumeralSystem<usize> for Base {
   }
 }
 
-macro_rules! small_int {
+macro_rules! small_uint {
   ($type:ty) => {
     impl NumeralSystem<$type> for Base {
       fn from_str(&self, rep: &str) -> Result<$type, StrError> {
@@ -183,10 +183,10 @@ macro_rules! small_int {
   };
 }
 
-small_int!{u8}
-small_int!{u16}
+small_uint!{u8}
+small_uint!{u16}
 
-macro_rules! large_int {
+macro_rules! large_uint {
   ($type:ty) => {
     impl NumeralSystem<$type> for Base {
       fn from_str(&self, rep: &str) -> Result<$type, StrError> {
@@ -239,6 +239,6 @@ macro_rules! large_int {
   };
 }
 
-large_int!{u32}
-large_int!{u64}
-large_int!{u128}
+large_uint!{u32}
+large_uint!{u64}
+large_uint!{u128}
