@@ -3,6 +3,6 @@
 
 # based
 
-`based` provides support for custom numerical bases. Currently only single-character digits are supported.
+`based` provides support for custom numerical bases. `based` does not support multi-character digits.
 
 Please see the documentation for examples.

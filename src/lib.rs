@@ -3,7 +3,7 @@
 
 `based` provides support for custom numeral systems with single-character digits.
 
-`based` does not currently support multi-character digits.
+`based` does not support multi-character digits.
 */
 
 // use std::ops::{AddAssign, MulAssign};
