@@ -2,13 +2,14 @@
 //!
 //! `based` provides support for custom numeral systems with single-character digits.
 //!
-//! `based` does not currently support multiple-character digits.
+//! `based` does not currently support multi-character digits.
 
 use std::ops::{AddAssign, MulAssign};
 
 #[derive(Debug)]
-/// The error type produced when [`Base::from_str`](Base::from_str) encounters an unknown character.
-/// Contains the unknown character.
+/// `UnknownChar` is the error type produced when 
+/// [`Base::from_str`](Base::from_str) encounters an unknown character.
+/// It contains the unknown character.
 /// 
 /// # Examples
 /// 
@@ -33,7 +34,7 @@ impl std::error::Error for UnknownChar {
   }
 }
 
-/// The representation of a numeral system.
+/// `Base` represents a numeral system.
 pub struct Base {
   base: Vec<char>,
   vals: std::collections::HashMap<char, usize>,
