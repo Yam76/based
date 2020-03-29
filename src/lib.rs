@@ -6,9 +6,6 @@
 `based` does not support multi-character digits.
 */
 
-// use std::ops::{AddAssign, MulAssign};
-
-
 use std::convert::TryFrom;
 use std::num::TryFromIntError;
 
@@ -36,7 +33,7 @@ impl std::error::Error for StrError {
   fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
     match self {
       StrError::UnknownChar(_) => None,
-      StrError::Try(t) => t.source()
+      StrError::Try(t) => Some(t)
     }
   }
 }
