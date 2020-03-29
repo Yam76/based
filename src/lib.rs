@@ -173,6 +173,7 @@ macro_rules! small_uint {
     impl NumeralSystem<$type> for Base {
       from_str!{$type}
     
+      /// Never produces `Err`.
       fn digits(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
         let val: usize = usize::from(val);
         let mut stack = Vec::new();
