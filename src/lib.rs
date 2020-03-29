@@ -109,6 +109,9 @@ pub trait NumeralSystem<T> {
   representation of that number in the system.
 
   Returns `Err` if an int to int conversion fails.
+
+  This will interpret signed integers as if their bits represented their
+  unsigned counterparts.
    */
   fn digits(&self, val: T) -> Result<String, TryFromIntError>;
 }
