@@ -4,6 +4,17 @@
 `based` provides support for custom numeral systems with single-character digits.
 
 `based` does not support multi-character digits.
+
+# Examples
+
+```
+use based::{Base, NumeralSystem};
+
+let base16 = Base::new("0123456789abcdef");
+let val: usize = base16.from_str("10").unwrap();
+assert_eq!(val, 16);
+assert_eq!(base16.digits(16 as usize).unwrap(), "10")
+```
 */
 
 use std::convert::TryFrom;
@@ -16,6 +27,7 @@ or fails to convert between two integer types.
 */
 #[derive(Debug)]
 pub enum StrError {
+  /// Contains the unknown character.
   UnknownChar(char),
   Try(TryFromIntError)
 }
@@ -94,6 +106,7 @@ impl Base {
 
 }
 
+/// `NumeralSystem` provides conversions to and from representations in the given system.
 pub trait NumeralSystem<T> {
 
   /**
@@ -104,6 +117,7 @@ pub trait NumeralSystem<T> {
   or if an int to int conversion fails.
   */
   fn from_str(&self, rep: &str) -> Result<T, StrError>;
+
   /** 
   Given a `NumeralSystem` and a number, return the 
   representation of that number in the system.
@@ -112,7 +126,7 @@ pub trait NumeralSystem<T> {
 
   This will interpret signed integers as if their bits represented their
   unsigned counterparts.
-   */
+  */
   fn digits(&self, val: T) -> Result<String, TryFromIntError>;
 }
 
