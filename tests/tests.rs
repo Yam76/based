@@ -1,26 +1,55 @@
-use based::NumeralSystem;
-
 const BASE57: &'static str = "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ";
 
-#[test]
-fn check_multidigit_rep() {
-  let base = based::Base::new(BASE57);
-  assert_eq!(base.digits(60 as usize).unwrap(), "35");
+type Result<T> = std::result::Result<T, based::StrError>;
+
+macro_rules! test {
+  ($type:ty) => {
+    use based::*;
+
+    #[test]
+    fn check () {
+      let base = based::Base::new(super::BASE57);
+      let val: $type = 60;
+
+      assert_eq!(base.digits(val).unwrap(), "35");
+
+      let target: $type = base.from_str("35").unwrap();
+      assert_eq!(target, val);
+
+      let failure: super::Result<$type> = base.from_str("35[");
+      assert!(failure.is_err());
+    }
+  }
 }
 
-#[test]
-fn check_multidigit_from_str() {
-  let base = based::Base::new(BASE57);
-  let result: std::result::Result<usize, based::StrError> = base.from_str("35");
-  assert!(result.is_ok());
-  assert_eq!(result.unwrap(), 60);
-}
+mod test_usize {test!{usize}}
+mod test_u8 {test!{u8}}
+mod test_u16 {test!{u16}}
+mod test_u32 {test!{u32}}
+mod test_u64{test!{u64}}
+mod test_u128 {test!{u128}}
 
-#[test]
-fn check_failing_from_str() {
-  let base = based::Base::new(BASE57);
-  let temp: std::result::Result<usize, based::StrError> = base.from_str("35]");
-  assert!(temp.is_err());
+mod test_isize {test!{isize}}
+mod test_i8 {test!{i8}}
+mod test_i16 {test!{i16}}
+mod test_i32 {test!{u32}}
+mod test_i64{test!{i64}}
+mod test_i128 {test!{i128}}
+
+mod test_overflow {
+  use based::*;
+
+  #[test]
+  fn check () {
+    let base = based::Base::new(super::BASE57);
+    let val: i8 = -1;
+
+    assert_eq!(base.digits(val).unwrap(), "6v");
+
+    let failure: super::Result<i8> = base.from_str("6v");
+    assert!(failure.is_err());
+  }
+
 }
 
 
