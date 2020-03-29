@@ -1,4 +1,4 @@
-[![Documentation](https://docs.rs/based/badge.svg)](docs.rs/based)
+[![Documentation](https://docs.rs/based/badge.svg)](https://docs.rs/based)
 [![Crate](https://img.shields.io/crates/v/based.svg)](https://crates.io/crates/based)
 
 # based
