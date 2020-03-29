@@ -8,35 +8,45 @@
 
 // use std::ops::{AddAssign, MulAssign};
 
-#[derive(Debug)]
+
+use std::convert::TryFrom;
+use std::num::TryFromIntError;
+
 /**
-`UnknownChar` is the error type produced when 
-[`Base::from_str`](Base::from_str) encounters an unknown character.
-It contains the unknown character.
- 
-# Examples
- 
-```
-use based::{Base, NumeralSystem};
-
-let base16 = Base::new("0123456789abcdef");
-let sixteen = base16.from_str("0n1");
-assert_eq!(sixteen.err().unwrap().0, 'n');
-```
+`StrError` is the error type produced when 
+[`Base::from_str`](Base::from_str) encounters an unknown character
+or fails to convert between two integer types.
 */
-pub struct UnknownChar(pub char);
+#[derive(Debug)]
+pub enum StrError {
+  UnknownChar(char),
+  Try(TryFromIntError)
+}
 
-impl std::fmt::Display for UnknownChar {
+impl std::fmt::Display for StrError {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-      write!(f, "Encountered char {} not in base", self.0)
+    match self {
+      StrError::UnknownChar(c) => write!(f, "Encountered char {} not in base", c),
+      StrError::Try(t) => t.fmt(f)
+    }   
   }
 }
 
-impl std::error::Error for UnknownChar {
+impl std::error::Error for StrError {
   fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-      None
+    match self {
+      StrError::UnknownChar(_) => None,
+      StrError::Try(t) => t.source()
+    }
   }
 }
+
+impl From<TryFromIntError> for StrError {
+  fn from(err: TryFromIntError) -> StrError {
+    StrError::Try(err)
+  }
+}
+
 
 /// `Base` represents a single-character per digit numeral system.
 pub struct Base {
@@ -95,34 +105,66 @@ pub trait NumeralSystem<T> {
 
   Returns `Err` if this function encounters a character not in the system.
   */
-  fn from_str(&self, rep: &str) -> Result<T, UnknownChar>;
+  fn from_str(&self, rep: &str) -> Result<T, StrError>;
   /** 
   Given a `NumeralSystem` and a number, return the 
   representation of that number in the system.
    */
-  fn digits(&self, val: T) -> String;
+  fn digits(&self, val: T) -> Result<String, TryFromIntError>;
 }
 
-macro_rules! from_str_lossy {
+impl NumeralSystem<usize> for Base {
+  fn from_str(&self, rep: &str) -> Result<usize, StrError> {
+    let mut val = 0;
+    let radix = self.base.len();
+    for c in rep.chars() {
+      match self.vals.get(&c) {
+        None => return Err(StrError::UnknownChar(c)),
+        Some(v) => {
+          val *= radix;
+          val += *v;
+        }
+      }
+    }
+    Ok(val)
+  }
+
+  /// Never produces `Err`.
+  fn digits(&self, val: usize) -> Result<String, TryFromIntError> {
+    let mut stack = Vec::new();
+    let radix = self.base.len();
+    let mut rem = val % radix;
+    stack.push(self.base[rem]);
+    let mut div = val / radix;
+    while div > 0 {
+      rem = div % radix;
+      div = div / radix;
+      stack.push(self.base[rem]);
+    } 
+    stack.reverse();
+    Ok(stack.into_iter().collect())
+  }
+}
+
+macro_rules! small_int {
   ($type:ty) => {
     impl NumeralSystem<$type> for Base {
-      /// Potentially lossy.
-      fn from_str(&self, rep: &str) -> Result<$type, UnknownChar> {
+      fn from_str(&self, rep: &str) -> Result<$type, StrError> {
         let mut val = 0;
         let radix = self.base.len();
         for c in rep.chars() {
           match self.vals.get(&c) {
-            None => return Err(UnknownChar(c)),
+            None => return Err(StrError::UnknownChar(c)),
             Some(v) => {
               val *= radix;
               val += *v;
             }
           }
         }
-        Ok(val as $type)
+        Ok(<$type>::try_from(val)?)
       }
     
-      fn digits(&self, val: $type) -> String {
+      fn digits(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
         let val: usize = usize::from(val);
         let mut stack = Vec::new();
         let radix = self.base.len();
@@ -135,101 +177,68 @@ macro_rules! from_str_lossy {
           stack.push(self.base[rem]);
         } 
         stack.reverse();
-        stack.into_iter().collect()
+        Ok(stack.into_iter().collect())
       }
     }
   };
 }
 
-from_str_lossy!{u8}
-from_str_lossy!{u16}
+small_int!{u8}
+small_int!{u16}
 
-/*
-impl NumeralSystem<u8> for Base {
-  /// Potentially lossy.
-  fn from_str(&self, rep: &str) -> Result<u8, UnknownChar> {
-    let mut val = 0;
-    let radix = self.base.len();
-    for c in rep.chars() {
-      match self.vals.get(&c) {
-        None => return Err(UnknownChar(c)),
-        Some(v) => {
-          val *= radix;
-          val += *v;
+macro_rules! large_int {
+  ($type:ty) => {
+    impl NumeralSystem<$type> for Base {
+      fn from_str(&self, rep: &str) -> Result<$type, StrError> {
+        let mut val = 0;
+        let radix = self.base.len();
+        for c in rep.chars() {
+          match self.vals.get(&c) {
+            None => return Err(StrError::UnknownChar(c)),
+            Some(v) => {
+              val *= radix;
+              val += *v;
+            }
+          }
+        }
+        Ok(<$type>::try_from(val)?)
+      }
+    
+      fn digits(&self, val: $type) -> Result<String, std::num::TryFromIntError> {
+        if std::mem::size_of::<$type>() <= std::mem::size_of::<usize>() {
+          let val: usize = usize::try_from(val)?;
+          let mut stack = Vec::new();
+          let radix = self.base.len();
+          let mut rem = val % radix;
+          stack.push(self.base[rem]);
+          let mut div = val / radix;
+          while div > 0 {
+            rem = div % radix;
+            div = div / radix;
+            stack.push(self.base[rem]);
+          } 
+          stack.reverse();
+          Ok(stack.into_iter().collect())
+        }
+        else {
+          let mut stack = Vec::new();
+          let radix = <$type>::try_from(self.base.len())?;
+          let mut rem = val % radix;
+          stack.push(self.base[usize::try_from(rem)?]);
+          let mut div = val / radix;
+          while div > 0 {
+            rem = div % radix;
+            div = div / radix;
+            stack.push(self.base[usize::try_from(rem)?]);
+          } 
+          stack.reverse();
+          Ok(stack.into_iter().collect())
         }
       }
     }
-    Ok(val as u8)
-  }
-
-  fn digits(&self, val: u8) -> String {
-    let val: usize = usize::from(val);
-    let mut stack = Vec::new();
-    let radix = self.base.len();
-    let mut rem = val % radix;
-    stack.push(self.base[rem]);
-    let mut div = val / radix;
-    while div > 0 {
-      rem = div % radix;
-      div = div / radix;
-      stack.push(self.base[rem]);
-    } 
-    stack.reverse();
-    stack.into_iter().collect()
-  }
+  };
 }
-*/
 
-impl NumeralSystem<usize> for Base {
-  /*
-  # Examples
-   
-  ```
-  use based::Base;
-  
-  let base16 = Base::new("0123456789abcdef");
-  let sixteen = base16.from_str::<usize>("10");
-  assert_eq!(sixteen.unwrap(), 16);
-  ```
-  */
-  fn from_str(&self, rep: &str) -> Result<usize, UnknownChar> {
-    let mut val = 0;
-    let radix = self.base.len();
-    for c in rep.chars() {
-      match self.vals.get(&c) {
-        None => return Err(UnknownChar(c)),
-        Some(v) => {
-          val *= radix;
-          val += *v;
-        }
-      }
-    }
-    Ok(val)
-  }
-
-  /* 
-  # Examples
-   
-  ```
-  use based::Base;
-  
-  let base16 = Base::new("0123456789abcdef");
-  let sixteen = base16.digits::<usize>(16);
-  assert_eq!(sixteen, "10");
-  ```
-  */
-  fn digits(&self, val: usize) -> String {
-    let mut stack = Vec::new();
-    let radix = self.base.len();
-    let mut rem = val % radix;
-    stack.push(self.base[rem]);
-    let mut div = val / radix;
-    while div > 0 {
-      rem = div % radix;
-      div = div / radix;
-      stack.push(self.base[rem]);
-    } 
-    stack.reverse();
-    stack.into_iter().collect()
-  }
-}
+large_int!{u32}
+large_int!{u64}
+large_int!{u128}

@@ -1,0 +1,23 @@
+  /*
+  # Examples
+   
+  ```
+  use based::Base;
+  
+  let base16 = Base::new("0123456789abcdef");
+  let sixteen = base16.from_str::<usize>("10");
+  assert_eq!(sixteen.unwrap(), 16);
+  ```
+  */
+
+    /* 
+  # Examples
+   
+  ```
+  use based::Base;
+  
+  let base16 = Base::new("0123456789abcdef");
+  let sixteen = base16.digits::<usize>(16);
+  assert_eq!(sixteen, "10");
+  ```
+  */
