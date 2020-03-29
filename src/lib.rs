@@ -1,6 +1,6 @@
 //! # based
 //!
-//! `based` provides support for custom numerical bases with single-character digits.
+//! `based` provides support for custom numeral systems with single-character digits.
 //!
 //! `based` does not currently support multiple-character digits.
 
@@ -33,7 +33,7 @@ impl std::error::Error for UnknownChar {
   }
 }
 
-/// The base of a numeral system.
+/// The representation of a numeral system.
 pub struct Base {
   base: Vec<char>,
   vals: std::collections::HashMap<char, usize>,
@@ -46,7 +46,7 @@ impl std::fmt::Display for Base {
 }
 
 impl Base {
-  /// Creates a new base from the given string slice.
+  /// Creates a new numeral system from the given string slice.
   /// 
   /// The value of each character is its index in the slice,
   /// e.g. the first character has value 0, the second
