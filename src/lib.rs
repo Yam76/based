@@ -1,18 +1,25 @@
 //! # based
 //!
-//! `based` supports the creation of bases with custom digits,
-//! where each digit is one character. 
+//! `based` provides support for custom numerical bases with single-character digits.
 //!
 //! `based` does not currently support multiple-character digits.
-//!
-
 
 use std::ops::{AddAssign, MulAssign};
 
 #[derive(Debug)]
 /// Error type produced when [`Base::from_str`](Base::from_str) encounters an unknown character.
 /// Contains the unknown character.
-pub struct UnknownChar(char);
+/// 
+/// # Examples
+/// 
+/// ```
+/// use based::Base;
+///
+/// let base16 = Base::new("0123456789abcdef");
+/// let sixteen = base16.from_str::<usize>("0n1");
+/// assert_eq!(sixteen.err().unwrap().0, 'n');
+/// ```
+pub struct UnknownChar(pub char);
 
 impl std::fmt::Display for UnknownChar {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
