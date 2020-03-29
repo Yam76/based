@@ -45,7 +45,7 @@ impl From<TryFromIntError> for StrError {
 }
 
 
-/// `Base` represents a single-character per digit numeral system.
+/// `Base` represents a numeral system with single-character digits.
 pub struct Base {
   base: Vec<char>,
   vals: std::collections::HashMap<char, usize>,
@@ -100,12 +100,15 @@ pub trait NumeralSystem<T> {
   Given a `NumeralSystem` and a number's representation
   in that system, return the number.
 
-  Returns `Err` if this function encounters a character not in the system.
+  Returns `Err` if this function encounters a character not in the system,
+  or if an int to int conversion fails.
   */
   fn from_str(&self, rep: &str) -> Result<T, StrError>;
   /** 
   Given a `NumeralSystem` and a number, return the 
   representation of that number in the system.
+
+  Returns `Err` if an int to int conversion fails.
    */
   fn digits(&self, val: T) -> Result<String, TryFromIntError>;
 }
