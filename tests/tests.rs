@@ -11,12 +11,12 @@ macro_rules! test {
       let base = based::Base::new(super::BASE57);
       let val: $type = 60;
 
-      assert_eq!(base.digits(val).unwrap(), "35");
+      assert_eq!(base.encode(val).unwrap(), "35");
 
-      let target: $type = base.from_str("35").unwrap();
+      let target: $type = base.decode("35").unwrap();
       assert_eq!(target, val);
 
-      let failure: super::Result<$type> = base.from_str("35[");
+      let failure: super::Result<$type> = base.decode("35[");
       assert!(failure.is_err());
     }
   }
@@ -44,9 +44,9 @@ mod test_overflow {
     let base = based::Base::new(super::BASE57);
     let val: i8 = -1;
 
-    assert_eq!(base.digits(val).unwrap(), "6v");
+    assert_eq!(base.encode(val).unwrap(), "6v");
 
-    let failure: super::Result<i8> = base.from_str("6v");
+    let failure: super::Result<i8> = base.decode("6v");
     assert!(failure.is_err());
   }
 
