@@ -24,7 +24,7 @@ pub use single_base::*;
 
 /**
 `StrError` is the error type produced when 
-[`Base::from_str`](Base::from_str) encounters an unknown character
+[`NumeralSystem::decode`](NumeralSystem::decode) encounters an unknown character
 or fails to convert between two integer types.
 */
 #[derive(Debug)]
