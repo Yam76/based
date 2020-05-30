@@ -3,7 +3,24 @@ use std::convert::TryFrom;
 use std::num::TryFromIntError;
 use std::collections::HashMap;
 
-/// `Base` represents a numeral system with single-character digits.
+/** `Base` represents a numeral system with single-character digits.
+
+  When creating a new numeral system from a given string slice,
+  the value of each character is its index in the slice,
+  e.g. the first character has value `0`, the second has value `1`, etc.
+
+  If the given slice has at least one duplicate character, parsing will
+  produce an `Err`.
+
+  # Examples
+  
+  ```
+  use based::*;
+  
+  let base16: based::Base = "0123456789abcdef".parse().unwrap();
+  assert_eq!("a", base16.encode(10).unwrap());
+  ```
+*/
 pub struct Base {
   base: Vec<char>,
   vals: std::collections::HashMap<char, usize>,
@@ -15,6 +32,10 @@ impl std::fmt::Display for Base {
   }
 }
 
+/**
+`DuplicateCharacterError` is the error type produced when trying to create
+a [`Base`](Base) from a string with at least one duplicate character.
+*/
 #[derive(Debug)]
 pub struct DuplicateCharacterError {
   dup: char,
@@ -25,7 +46,7 @@ pub struct DuplicateCharacterError {
 
 impl std::fmt::Display for DuplicateCharacterError {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-    write!(f, "Encountered duplicate character {} at {} and {}", self.dup, self.first, self.second)
+    write!(f, "Encountered duplicate character '{}' at {} and {}", self.dup, self.first, self.second)
   }
 }
 
@@ -35,23 +56,10 @@ impl std::error::Error for DuplicateCharacterError {
   }
 }
 
+
 impl std::str::FromStr for Base {
   type Err = DuplicateCharacterError;
 
-  /**
-  Creates a new numeral system from the given string slice.
-  
-  The value of each character is its index in the slice,
-  e.g. the first character has value `0`, the second value `1`, etc.
-  
-  # Examples
-  
-  ```
-  use based::Base;
-  
-  let base16: based::Base = "0123456789abcdef".parse().unwrap();
-  ```
-  */
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     let mut base: Vec<char> = s.chars().collect();
 
