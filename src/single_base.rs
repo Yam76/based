@@ -38,6 +38,20 @@ impl std::error::Error for DuplicateCharacterError {
 impl std::str::FromStr for Base {
   type Err = DuplicateCharacterError;
 
+  /**
+  Creates a new numeral system from the given string slice.
+  
+  The value of each character is its index in the slice,
+  e.g. the first character has value `0`, the second value `1`, etc.
+  
+  # Examples
+  
+  ```
+  use based::Base;
+  
+  let base16: based::Base = "0123456789abcdef".parse().unwrap();
+  ```
+  */
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     let mut base: Vec<char> = s.chars().collect();
 
@@ -61,44 +75,6 @@ impl std::str::FromStr for Base {
     Ok(Base { base, vals })
   }
 }
-
-impl Base {
-  /**
-  Creates a new numeral system from the given string slice.
-  
-  The value of each character is its index in the slice,
-  e.g. the first character has value `0`, the second value `1`, etc.
-   
-  The behavior of this function is undefined when
-  a character is present more than once in the given string slice.
-  
-  # Examples
-  
-  ```
-  use based::Base;
-  
-  let base16 = based::Base::new("0123456789abcdef");
-  ```
-  */
-  pub fn new(base: &str) -> Base {
-    let mut vals: std::collections::HashMap<char, usize> = base
-    .chars()
-    .enumerate()
-    .map(|(i, c)| (c, i))
-    .collect();
-    vals.shrink_to_fit();
-
-    let mut base: Vec<char> = base.chars().collect();
-    base.shrink_to_fit();
-
-    Base {
-      base,
-      vals, 
-    }
-  }
-
-}
-
 
 impl NumeralSystem<usize> for Base {
   fn decode(&self, rep: &str) -> Result<usize, StrError> {

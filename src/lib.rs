@@ -10,7 +10,7 @@
 ```
 use based::{Base, NumeralSystem};
 
-let base16 = Base::new("0123456789abcdef");
+let base16: Base = "0123456789abcdef".parse().unwrap();
 let val: usize = base16.decode("10").unwrap();
 assert_eq!(val, 16);
 assert_eq!(base16.encode(16 as usize).unwrap(), "10")

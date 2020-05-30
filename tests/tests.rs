@@ -8,7 +8,7 @@ macro_rules! test {
 
     #[test]
     fn check () {
-      let base = based::Base::new(super::BASE57);
+      let base: based::Base = super::BASE57.parse().unwrap();
       let val: $type = 60;
 
       assert_eq!(base.encode(val).unwrap(), "35");
@@ -41,11 +41,12 @@ mod test_overflow {
 
   #[test]
   fn check () {
-    let base = based::Base::new(super::BASE57);
+    let base: based::Base = super::BASE57.parse().unwrap();
     let val: i8 = -1;
 
     assert_eq!(base.encode(val).unwrap(), "6v");
 
+    // encoded as max u8, outside of i8 range, therefore try_from fails
     let failure: super::Result<i8> = base.decode("6v");
     assert!(failure.is_err());
   }
