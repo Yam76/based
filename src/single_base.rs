@@ -1,6 +1,7 @@
 use crate::{NumeralSystem, StrError};
 use std::convert::TryFrom;
 use std::num::TryFromIntError;
+use std::collections::HashMap;
 
 /// `Base` represents a numeral system with single-character digits.
 pub struct Base {
@@ -11,6 +12,53 @@ pub struct Base {
 impl std::fmt::Display for Base {
   fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
       write!(f, "{}", self.base.iter().collect::<String>())
+  }
+}
+
+#[derive(Debug)]
+pub struct DuplicateCharacterError {
+  dup: char,
+  first: usize,
+  second: usize,
+}
+
+
+impl std::fmt::Display for DuplicateCharacterError {
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    write!(f, "Encountered duplicate character {} at {} and {}", self.dup, self.first, self.second)
+  }
+}
+
+impl std::error::Error for DuplicateCharacterError {
+  fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+    None
+  }
+}
+
+impl std::str::FromStr for Base {
+  type Err = DuplicateCharacterError;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let mut base: Vec<char> = s.chars().collect();
+
+    let mut vals: std::collections::HashMap<char, usize> = HashMap::new();
+
+    for (i, c) in base.iter().enumerate() {
+      if let Some(first) = vals.insert(*c, i) {
+        return Err(
+          DuplicateCharacterError{
+            dup: *c,
+            first,
+            second: i,
+          }
+        )
+      }
+    }
+    
+    vals.shrink_to_fit();
+    base.shrink_to_fit();
+
+    Ok(Base { base, vals })
   }
 }
 
