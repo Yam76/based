@@ -1,7 +1,7 @@
 /*! 
 # based
 
-`based` provides support for custom numeral systems with single-character digits.
+`based` provides support for custom single-character digits.
 
 `based` does not support multi-character digits.
 
